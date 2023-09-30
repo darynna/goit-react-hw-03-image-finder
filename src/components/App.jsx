@@ -19,12 +19,7 @@ export class App extends Component{
 
 
   componentDidUpdate(prevProps, prevState){
-     if(prevState.category !== this.state.category){
-      this.setState({images: []})
-      this.getImages()
-     }
-
-      if(prevState.page !== this.state.page){
+     if(prevState.category !== this.state.category || prevState.page !== this.state.page){
       this.getImages()
      }
   }
@@ -48,8 +43,10 @@ export class App extends Component{
   handleSubmit=(e)=>{
     e.preventDefault()
     const imageTofind = e.currentTarget.elements.search.value
-    console.log(imageTofind)
-    this.setState({category: imageTofind})
+    if (imageTofind.trim()===""){
+      return Notify.warning('It is not possible to make a request for an empty srtring')
+    }
+    this.setState({category: imageTofind, images: [], page: 1})
 
   }
 
@@ -72,7 +69,7 @@ export class App extends Component{
     <div className="App">
       <SearchBar onSubmit={this.handleSubmit}/>
       {isLoading && <Loader/>}
-      {images.length > 0 ? <><ImageGallery images={this.state.images} handleModalOpen={this.handleModalOpen}/></> : <p className="InformLoadMore">Search for images!</p>}
+      {images.length > 0 ? <><ImageGallery images={this.state.images}/></> : <p className="InformLoadMore">Search for images!</p>}
       {images.length > 0 && !buttonHidden && <Button onClick={this.handleLoadMore}/>}
       {buttonHidden && <p className="InformLoadMore">Sorry, there all images we have!</p>}
       
