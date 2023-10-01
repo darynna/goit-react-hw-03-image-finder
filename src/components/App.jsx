@@ -13,8 +13,7 @@ export class App extends Component{
     category: '',
     isLoading: false,
     page: 1,
-    totalPages: 0,
-    buttonHidden:  false
+    loadMore: true,
   }
 
 
@@ -30,11 +29,10 @@ export class App extends Component{
     this.setState({isLoading: true})
     const response = await fetchImages(category, page)
     const images = response.hits;
-    const totalPages = response.total
-    this.setState(prevState=>({images: [...prevState.images, ...images], totalPages: Math.ceil(totalPages / 12)}))
+    const totalHits = response.totalHits ;
+    this.setState(prevState=>({images: [...prevState.images, ...images], loadMore: this.state.page < Math.ceil(totalHits / 12 )}))
     } catch (error) {
       Notify.failure(error.message);
-      console.log(error)
     }finally{
       this.setState({isLoading: false})
     }
@@ -51,8 +49,8 @@ export class App extends Component{
   }
 
   handleLoadMore=()=>{
-    const {page, totalPages} = this.state
-    if(page < totalPages){
+    const {loadMore} = this.state
+    if(loadMore){
       this.setState(prevstate => ({page: prevstate.page + 1}))
     }else {
       this.setState({buttonHidden: true})
@@ -62,7 +60,7 @@ export class App extends Component{
 
 
   render(){
-   const {isLoading, images, buttonHidden} = this.state;
+   const {isLoading, images, loadMore} = this.state;
 
 
   return (
@@ -70,8 +68,9 @@ export class App extends Component{
       <SearchBar onSubmit={this.handleSubmit}/>
       {isLoading && <Loader/>}
       {images.length > 0 ? <><ImageGallery images={this.state.images}/></> : <p className="InformLoadMore">Search for images!</p>}
-      {images.length > 0 && !buttonHidden && <Button onClick={this.handleLoadMore}/>}
-      {buttonHidden && <p className="InformLoadMore">Sorry, there all images we have!</p>}
+      {loadMore && !isLoading && images.length > 0 && (
+          <Button onClick={this.handleLoadMore} />)}
+      {loadMore === false && <p className="InformLoadMore">Sorry, there all images we have!</p>}
       
     </div>
   );}
